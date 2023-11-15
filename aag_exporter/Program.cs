@@ -63,7 +63,35 @@ Metrics.DefaultRegistry.AddBeforeCollectCallback(cancel =>
     return Task.CompletedTask;
 });
 
-app.MapGet("/aag", () => GetAagData());
+app.MapGet("/aag", () =>
+{
+    var data = GetAagData();
+    return new AagData
+    {
+        Timestamp = data.DateLocalTime.ToUniversalTime(),
+        CwInfo = data.CwInfo,
+        SldData = data.SldData,
+        Clouds = data.Clouds,
+        CloudsSafe = data.CloudsSafe,
+        Temperature = data.Temperature,
+        Wind = data.Wind,
+        WindSafe = data.WindSafe,
+        Gust = data.Gust,
+        Rain = data.Rain,
+        RainSafe = data.RainSafe,
+        Light = data.Light,
+        LightSafe = data.LightSafe,
+        Switch = data.Switch,
+        Safe = data.Safe,
+        Humidity = data.Humidity,
+        HumiditySafe = data.HumiditySafe,
+        DewPoint = data.DewPoint,
+        AbsolutePressure = data.AbsolutePressure,
+        RelativePressure = data.RelativePressure,
+        PressureSafe = data.PressureSafe,
+        RawInfrared = data.RawInfrared,
+    };
+});
 app.MapGet("/debug", () =>
 {
     var debugText = File.ReadAllText(Path.Combine(aagDirectory, DebugFile), Encoding.UTF8);
@@ -71,10 +99,10 @@ app.MapGet("/debug", () =>
 });
 app.Run();
 
-AagData GetAagData()
+AagRaw GetAagData()
 {
     var jsonText = File.ReadAllText(Path.Combine(aagDirectory, JsonFile), Encoding.UTF8);
-    var aagData = JsonSerializer.Deserialize<AagData>(jsonText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? throw new NullReferenceException();
+    var aagData = JsonSerializer.Deserialize<AagRaw>(jsonText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? throw new NullReferenceException();
     return aagData;
 }
 
@@ -123,11 +151,10 @@ internal class IntegerToBooleanConverter : JsonConverter<bool>
     }
 }
 
-internal record AagData
+internal record AagRaw
 {
     [JsonConverter(typeof(AagDateTimeConverter))]
-    [JsonPropertyName("dateLocalTime")]
-    public DateTime Timestamp { get; set; }
+    public DateTime DateLocalTime { get; set; }
 
     public string CwInfo { get; init; } = string.Empty;
 
@@ -185,4 +212,30 @@ internal record AagData
 
     [JsonPropertyName("rawir")]
     public double RawInfrared { get; init; }
+}
+
+internal record AagData
+{
+    public required DateTime Timestamp { get; init; }
+    public required string CwInfo { get; init; }
+    public required string SldData { get; init; }
+    public required double Clouds { get; init; }
+    public required bool CloudsSafe { get; init; }
+    public required double Temperature { get; init; }
+    public required double Wind { get; init; }
+    public required bool WindSafe { get; init; }
+    public required double Gust { get; init; }
+    public required int Rain { get; init; }
+    public required bool RainSafe { get; init; }
+    public required int Light { get; init; }
+    public required bool LightSafe { get; init; }
+    public required bool Switch { get; init; }
+    public required bool Safe { get; init; }
+    public required double Humidity { get; init; }
+    public required bool HumiditySafe { get; init; }
+    public required double DewPoint { get; init; }
+    public required double AbsolutePressure { get; init; }
+    public required double RelativePressure { get; init; }
+    public required bool PressureSafe { get; init; }
+    public required double RawInfrared { get; init; }
 }
