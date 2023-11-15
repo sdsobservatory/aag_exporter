@@ -126,7 +126,8 @@ internal class IntegerToBooleanConverter : JsonConverter<bool>
 internal record AagData
 {
     [JsonConverter(typeof(AagDateTimeConverter))]
-    public DateTime DateLocalTime { get; set; }
+    [JsonPropertyName("dateLocalTime")]
+    public DateTime Timestamp { get; set; }
 
     public string CwInfo { get; init; } = string.Empty;
 
